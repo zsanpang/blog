@@ -1,71 +1,123 @@
-(function(){
+;(function () {
+	
+	"use strict";
 
-	// Highlight current nav item
-	var hasCurrent = false;
+	var isMobile = {
+		Android: function() {
+			return navigator.userAgent.match(/Android/i);
+		},
+			BlackBerry: function() {
+			return navigator.userAgent.match(/BlackBerry/i);
+		},
+			iOS: function() {
+			return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+		},
+			Opera: function() {
+			return navigator.userAgent.match(/Opera Mini/i);
+		},
+			Windows: function() {
+			return navigator.userAgent.match(/IEMobile/i);
+		},
+			any: function() {
+			return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
+		}
+	};
 
-	//把相对路径解析成绝对路径
-	function absolute(href) {
-	    var link = document.createElement("a");
-	    link.href = href;
-	    return (link.protocol+"//"+link.host+link.pathname+link.search+link.hash);
-	}
 
-	//移出所有的菜单的选中样式
-	$('#main-nav > li').each(function(){
-		$(this).removeClass('current-menu-item current_page_item');
+
+
+	var contentWayPoint = function() {
+		var i = 0;
+		$(".animate-box").waypoint( function( direction ) {
+
+			if( direction === "down" && !$(this.element).hasClass("animated-fast") ) {
+				
+				i++;
+
+				$(this.element).addClass("item-animate");
+				setTimeout(function(){
+
+					$("body .animate-box.item-animate").each(function(k){
+						var el = $(this);
+						setTimeout( function () {
+							var effect = el.data("animate-effect");
+							if ( effect === "fadeIn") {
+								el.addClass("fadeIn animated-fast");
+							} else if ( effect === "fadeInLeft") {
+								el.addClass("fadeInLeft animated-fast");
+							} else if ( effect === "fadeInRight") {
+								el.addClass("fadeInRight animated-fast");
+							} else {
+								el.addClass("fadeInUp animated-fast");
+							}
+
+							el.removeClass("item-animate");
+						},  k * 50, "easeInOutExpo" );
+					});
+					
+				}, 100);
+				
+			}
+
+		} , { offset: "85%" } );
+	};
+
+
+	
+
+	var goToTop = function() {
+
+		$(".js-gotop").on("click", function(event){
+			
+			event.preventDefault();
+
+			$("html, body").animate({
+				scrollTop: $("html").offset().top
+			}, 500, "easeInOutExpo");
+			
+			return false;
+		});
+
+		$(window).scroll(function(){
+
+			var $win = $(window);
+			if ($win.scrollTop() > 200) {
+				$(".js-top").addClass("active");
+			} else {
+				$(".js-top").removeClass("active");
+			}
+
+		});
+	
+	};
+
+
+	// Loading page
+	var loaderPage = function() {
+		$(".fh5co-loader").fadeOut("slow");
+	};
+
+	
+	var parallax = function() {
+
+		if ( !isMobile.any() ) {
+			$(window).stellar({
+				horizontalScrolling: false,
+				hideDistantElements: false, 
+				responsive: true
+
+			});
+		}
+	};
+
+
+	$(function(){
+		contentWayPoint();
+		
+		goToTop();
+		loaderPage();
+		parallax();
 	});
-	var links = $('#main-nav > li > a');
-	var urls = window.location.href;
-	//为什么要从后面往前面遍历？因为首页极有可能是https://xxxxx/,
-	//这样的话肯定能够匹配所有的项
-	for (var i = links.length; i >= 0; i--) {
-		if(urls.indexOf(absolute(links[i])) != -1){
-			$(links[i]).parent().addClass('current-menu-item current_page_item');
-			//为什么还要设置hasCurrent？因为不排除首页是
-			//https://xxxx/index.html格式的
-			hasCurrent = true;
-			break;
-		}		
-	}
 
 
-	if (!hasCurrent) {
-		$('#main-nav > li:first').addClass('current-menu-item current_page_item');
-	}
-})();
-
-
-
-// article toc
-var toc = document.getElementById('toc')
-
-if (toc != null) {
-	window.addEventListener("scroll", scrollcatelogHandler);
-	var tocPosition = 194+25;
-
-	function scrollcatelogHandler(e) {
-		 var event = e || window.event,
-		     target = event.target || event.srcElement;
-		 var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-		 if (scrollTop > tocPosition) {
-		     toc.classList.add("toc-fixed");
-		 } else {
-		     toc.classList.remove("toc-fixed");
-		 }
-	}
-}
-
-
-$('#main-navigation').on('click', function(){
-    if ($('#main-navigation').hasClass('main-navigation-open')){
-      $('#main-navigation').removeClass('main-navigation-open');
-    } else {
-      $('#main-navigation').addClass('main-navigation-open');
-    }
-  });
-
-$('#content').on('click', function(){
-    if ($('#main-navigation').hasClass('main-navigation-open')){
-      $('#main-navigation').removeClass('main-navigation-open');
-    }
-  });
+}());
